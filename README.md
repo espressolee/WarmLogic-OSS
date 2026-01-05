@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+# WarmLogic-OSS
+Evidence-centric AI governance tools: PASS / ACT / CT-safe evaluation harness, specs, and examples (public subset).
+=======
 # WarmLogic OSS Runtime (Demo)
 
 This repository is a **public, self-contained subset** of the WarmLogic program. It ships:
@@ -84,3 +88,4 @@ python -m console.app --run-root out/osctl_runs_demo --host 127.0.0.1 --port 800
 
 ## License
 Apache License 2.0 (see `LICENSE`). No production warranty; this is a demo-only artifact.
+>>>>>>> fbf5cfb (feat: initial OSS demo runtime (osctl + console + docs))
