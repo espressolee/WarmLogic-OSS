@@ -28,7 +28,7 @@ jobs:
       - name: osctl toy run + verify
         run: |
           source .venv/bin/activate
-          bash osctl/examples/os_v2_toy/run_osctl.sh
+          bash examples/os_v2_toy/run_osctl.sh
 
       - name: Console smoke
         run: |
