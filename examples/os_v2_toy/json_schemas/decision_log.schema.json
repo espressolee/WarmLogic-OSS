@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "osctl decision_log entry",
+  "type": "object",
+  "required": ["run_id", "event_id", "decision", "timestamp"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "event_id": {"type": "string"},
+    "decision": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "witness_path": {
+      "type": "object",
+      "properties": {
+        "exists": {"type": "boolean"},
+        "failed_axis": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

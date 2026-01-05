@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WarmLogic Console (Local Demo)</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2c;
+      --accent: #5ad1ff;
+      --text: #e8edf7;
+      --muted: #9fb2d0;
+      --fail: #ff7b7b;
+      --pass: #6ad48b;
+      --warn: #ffb347;
+      --border: #22324f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 20%, #11213d, #0b1220 45%), radial-gradient(circle at 80% 0%, #0d1e33, #0b1220 50%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+    }
+    header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(90, 209, 255, 0.12);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 12px;
+      border: 1px solid rgba(90, 209, 255, 0.35);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    }
+    .card h2 { margin: 0 0 10px 0; font-size: 17px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      color: var(--muted);
+    }
+    th { color: var(--text); font-weight: 600; }
+    tr:hover { background: rgba(90, 209, 255, 0.05); }
+    button {
+      background: rgba(90, 209, 255, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(90, 209, 255, 0.35);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: rgba(90, 209, 255, 0.25); }
+    .status {
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .status.PASS { color: var(--pass); background: rgba(106, 212, 139, 0.12); border: 1px solid rgba(106, 212, 139, 0.35); }
+    .status.FAIL { color: var(--fail); background: rgba(255, 123, 123, 0.12); border: 1px solid rgba(255, 123, 123, 0.35); }
+    .status.INDET, .status.UNKNOWN { color: var(--warn); background: rgba(255, 179, 71, 0.12); border: 1px solid rgba(255, 179, 71, 0.35); }
+    pre {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      overflow: auto;
+      font-size: 12px;
+      color: #c7d4ef;
+    }
+    .muted { color: var(--muted); }
+    .section-title { display: flex; align-items: center; gap: 8px; }
+    .section-title span { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WarmLogic Console</h1>
+    <div class="pill">Local Demo</div>
+    <div class="muted" id="status-line">Loading…</div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Runs</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>run_id</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="runs-body"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2>Run Detail</h2>
+        <span id="detail-run-id"></span>
+      </div>
+      <div id="run-detail" class="muted">Select a run.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2>CE Ledger</h2>
+        <span id="ce-count"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ce_id</th>
+            <th>run_id</th>
+            <th>violation</th>
+            <th>status</th>
+          </tr>
+        </thead>
+        <tbody id="ce-body"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <h2>Decision Log (sample)</h2>
+        <span id="decisions-count"></span>
+      </div>
+      <pre id="decisions-view" class="muted">Select a run to preview decisions.</pre>
+    </div>
+  </div>
+
+  <script>
+    const runsBody = document.getElementById("runs-body");
+    const runDetail = document.getElementById("run-detail");
+    const detailRunId = document.getElementById("detail-run-id");
+    const statusLine = document.getElementById("status-line");
+    const ceBody = document.getElementById("ce-body");
+    const ceCount = document.getElementById("ce-count");
+    const decisionsView = document.getElementById("decisions-view");
+    const decisionsCount = document.getElementById("decisions-count");
+
+    async function fetchJSON(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    function statusBadge(status) {
+      const s = status || "UNKNOWN";
+      return `<span class="status ${s}">${s}</span>`;
+    }
+
+    async function loadRuns() {
+      statusLine.textContent = "Loading runs…";
+      try {
+        const data = await fetchJSON("/api/v1/runs");
+        runsBody.innerHTML = "";
+        (data.items || []).forEach((run) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${run.run_id || "—"}</td>
+            <td>${statusBadge(run.status)}</td>
+            <td>${run.created_at || "—"}</td>
+            <td><button data-run="${run.run_id}">Open</button></td>
+          `;
+          tr.querySelector("button").addEventListener("click", () => showRun(run.run_id));
+          runsBody.appendChild(tr);
+        });
+        statusLine.textContent = `Loaded ${data.total || data.items?.length || 0} runs`;
+      } catch (err) {
+        statusLine.textContent = `Failed to load runs: ${err.message}`;
+      }
+    }
+
+    async function showRun(runId) {
+      if (!runId) return;
+      detailRunId.textContent = runId;
+      runDetail.textContent = "Loading run details…";
+      decisionsView.textContent = "Loading decisions…";
+      try {
+        const [run, decisions] = await Promise.all([
+          fetchJSON(`/api/v1/runs/${encodeURIComponent(runId)}`),
+          fetchJSON(`/api/v1/runs/${encodeURIComponent(runId)}/decisions`),
+        ]);
+        const proof = run.proof_manifest || {};
+        runDetail.innerHTML = `
+          <div class="muted">Status ${statusBadge(run.status)}</div>
+          <div><strong>created_at:</strong> ${run.created_at || "—"}</div>
+          <div><strong>tag:</strong> ${run.tag || "—"}</div>
+          <div><strong>artifacts:</strong> ${Object.keys(run.artifacts || {}).length} files</div>
+          <div><strong>verify_report:</strong> ${(run.verify_report && run.verify_report.overall_status) || "—"}</div>
+          <div><strong>proof files:</strong> ${(proof.artifacts && Object.keys(proof.artifacts).length) || 0}</div>
+        `;
+        const decItems = decisions.items || [];
+        decisionsCount.textContent = `${decItems.length} rows`;
+        decisionsView.textContent = JSON.stringify(decItems.slice(0, 5), null, 2);
+      } catch (err) {
+        runDetail.textContent = `Failed to load run ${runId}: ${err.message}`;
+        decisionsView.textContent = "";
+      }
+    }
+
+    async function loadCE() {
+      try {
+        const data = await fetchJSON("/api/v1/ce-ledger");
+        ceBody.innerHTML = "";
+        (data.items || []).slice(0, 20).forEach((ce) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${ce.ce_id || "—"}</td>
+            <td>${ce.run_id || "—"}</td>
+            <td>${ce.violation_type || ce.violation || "—"}</td>
+            <td>${ce.status || "—"}</td>
+          `;
+          ceBody.appendChild(tr);
+        });
+        ceCount.textContent = `${data.total || data.items?.length || 0} entries`;
+      } catch (err) {
+        ceCount.textContent = `Failed to load CE ledger: ${err.message}`;
+      }
+    }
+
+    loadRuns().then(() => loadCE());
+    setInterval(loadRuns, 120000);
+  </script>
+</body>
+</html>

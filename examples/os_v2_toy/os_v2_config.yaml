@@ -1,0 +1,4 @@
+# WarmLogic OS v2 runner configuration (used by osctl)
+workload: os_v2_e2
+logging:
+  level: info

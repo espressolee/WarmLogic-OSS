@@ -1,0 +1,41 @@
+name: OSS CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -U pip
+          pip install -r requirements.txt
+
+      - name: osctl toy run + verify
+        run: |
+          source .venv/bin/activate
+          bash osctl/examples/os_v2_toy/run_osctl.sh
+
+      - name: Console smoke
+        run: |
+          source .venv/bin/activate
+          python -m console.app --run-root out/osctl_runs --host 127.0.0.1 --port 8000 &
+          CONSOLE_PID=$!
+          sleep 5
+          curl -f http://127.0.0.1:8000/api/v1/runs
+          curl -f http://127.0.0.1:8000/api/v1/ce-ledger
+          kill $CONSOLE_PID || true

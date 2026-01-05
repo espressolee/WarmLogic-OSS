@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "osctl trigger_events entry",
+  "type": "object",
+  "required": ["run_id", "event_id", "trigger", "timestamp"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "event_id": {"type": "string"},
+    "trigger": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "axis": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

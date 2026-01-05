@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "osctl run_manifest",
+  "type": "object",
+  "required": ["run_id", "created_at", "config", "events", "status", "artifacts"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "created_at": {"type": "string"},
+    "config": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "events": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "ct_config": {
+      "type": ["object", "null"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "drift_config": {
+      "type": ["object", "null"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "cohort_id": {"type": ["string", "null"]},
+    "edition": {"type": ["string", "null"]},
+    "tag": {"type": ["string", "null"]},
+    "git_commit": {"type": ["string", "null"]},
+    "status": {"type": "string"},
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "govdec": {"type": "string"},
+        "decision_log": {"type": "string"},
+        "trigger_events": {"type": "string"},
+        "proof_manifest": {"type": "string"},
+        "verify_report": {"type": "string"},
+        "bundle": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
