@@ -1,0 +1,6 @@
+{"event_id": "e1", "timestamp": "2026-01-01T10:00:00Z", "type": "DECISION_OPEN", "case_id": "C-001", "actor": "userA"}
+{"event_id": "e2", "timestamp": "2026-01-01T10:00:05Z", "type": "EVIDENCE_SUBMITTED", "case_id": "C-001", "channel": "appeal_portal", "evidence_refs": ["doc-001"]}
+{"event_id": "e3", "timestamp": "2026-01-01T10:00:30Z", "type": "DECISION_FINAL", "case_id": "C-001", "govdec_id": "G-001", "outcome": "ALLOW"}
+{"event_id": "e4", "timestamp": "2026-01-01T10:01:00Z", "type": "DECISION_OPEN", "case_id": "C-002", "actor": "userB"}
+{"event_id": "e5", "timestamp": "2026-01-01T10:01:05Z", "type": "EVIDENCE_SUBMITTED", "case_id": "C-002", "channel": "appeal_portal", "evidence_refs": ["doc-002"]}
+{"event_id": "e6", "timestamp": "2026-01-01T10:01:25Z", "type": "DECISION_FINAL", "case_id": "C-002", "govdec_id": "G-002", "outcome": "ALLOW"}

@@ -1,0 +1,21 @@
+runtime:
+  name: os_v2_public_sanity
+  version: "1.0"
+  schemas_root: docs/papers/reflective_os/os_v2/json_schemas
+
+inputs:
+  event_log_path: docs/research/eval/Public_OSV2_Sanity_Source_v1/event_log_sanity.jsonl
+
+outputs:
+  out_dir: out/public_osv2_sanity
+
+checks:
+  - id: OSV2_SANITY_RULES
+    type: pass_v2
+    config:
+      boundary_checks_enabled: true
+      transfer_awareness_enabled: true
+      allow_missing_evidence_refs: false
+
+logging:
+  level: INFO
