@@ -46,6 +46,7 @@ This repository is a **public, self-contained subset** of the WarmLogic program.
 - `docs/Quickstart_OSCTL_v1.md` — step-by-step for the toy runtime.
 - `docs/Console_Overview_v1.md` — roles/screens/endpoints.
 - `docs/Runtime_SLI_SLO_Spec_v1.md` — SLI/SLO definitions used in the demo.
+- `docs/research/eval/Public_OSV2_Sanity_v1/README.md` — public OS v2 sanity bundle (synthetic data, reproducible).
 
 ---
 
