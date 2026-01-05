@@ -42,6 +42,16 @@ def list_runs(run_root: Path, limit: int = 50) -> List[Dict[str, Any]]:
                 status = load_json(verify).get("overall_status", "UNKNOWN")
             except Exception:
                 status = "UNKNOWN"
+        # attach optional metrics if present
+        metrics_root = run_root.parent / "metrics"
+        metrics = {}
+        metrics_path = metrics_root / f"runtime_sli_{man.get('run_id')}.json"
+        if metrics_path.exists():
+            try:
+                metrics = load_json(metrics_path)
+            except Exception:
+                metrics = {}
+
         items.append(
             {
                 "run_id": man.get("run_id"),
@@ -50,6 +60,10 @@ def list_runs(run_root: Path, limit: int = 50) -> List[Dict[str, Any]]:
                 "tag": man.get("tag"),
                 "cohort_id": man.get("cohort_id"),
                 "artifacts": man.get("artifacts", {}),
+                "decision_latency_p95_ms": metrics.get("decision_latency_p95_ms"),
+                "evidence_lag_p95_min": metrics.get("evidence_lag_p95_min"),
+                "ce_open_count": metrics.get("ce_open_count"),
+                "verify_fail_rate": metrics.get("verify_fail_rate"),
             }
         )
         if len(items) >= limit:
@@ -57,8 +71,9 @@ def list_runs(run_root: Path, limit: int = 50) -> List[Dict[str, Any]]:
     return items
 
 
-def create_app(run_root: Path, ce_ledger: Path) -> Flask:
+def create_app(run_root: Path, ce_ledger: Path, metrics_root: Path | None = None) -> Flask:
     app = Flask(__name__, static_folder="static", static_url_path="")
+    metrics_root = metrics_root or (run_root.parent / "metrics")
 
     @app.get("/api/v1/runs")
     def get_runs():
@@ -72,6 +87,8 @@ def create_app(run_root: Path, ce_ledger: Path) -> Flask:
         govdec = load_json(run_dir / "govdec.json")
         proof = load_json(run_dir / "proof_manifest.json")
         verify = load_json(run_dir / "verify_report.json") if (run_dir / "verify_report.json").exists() else {}
+        metrics_path = metrics_root / f"runtime_sli_{run_id}.json"
+        metrics = load_json(metrics_path) if metrics_path.exists() else {}
         return jsonify(
             {
                 "run_id": run_id,
@@ -81,6 +98,7 @@ def create_app(run_root: Path, ce_ledger: Path) -> Flask:
                 "artifacts": manifest.get("artifacts", {}),
                 "proof_manifest": proof,
                 "verify_report": verify,
+                "metrics": metrics,
             }
         )
 
@@ -94,7 +112,9 @@ def create_app(run_root: Path, ce_ledger: Path) -> Flask:
     def get_verify(run_id: str):
         ver_path = run_root / run_id / "verify_report.json"
         verify = load_json(ver_path) if ver_path.exists() else {}
-        return jsonify({"items": [verify] if verify else []})
+        metrics_path = metrics_root / f"runtime_sli_{run_id}.json"
+        metrics = load_json(metrics_path) if metrics_path.exists() else {}
+        return jsonify({"items": [verify] if verify else [], "metrics": metrics})
 
     @app.get("/api/v1/ce-ledger")
     def get_ce():
@@ -112,10 +132,12 @@ def main():
     parser = argparse.ArgumentParser(description="WarmLogic console backend (minimal)")
     parser.add_argument("--run-root", default="out/osctl_runs", help="Path to osctl runs")
     parser.add_argument("--ce-ledger", default="ledger/pilots/TeamA/CE_Ledger_v1.jsonl", help="Path to CE ledger JSONL")
+    parser.add_argument("--metrics-root", default=None, help="Optional path to metrics JSON files (runtime_sli_*.json)")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
-    app = create_app(Path(args.run_root), Path(args.ce_ledger))
+    metrics_root = Path(args.metrics_root) if args.metrics_root else None
+    app = create_app(Path(args.run_root), Path(args.ce_ledger), metrics_root)
     app.run(host=args.host, port=args.port)
 
 

@@ -119,6 +119,10 @@
             <th>run_id</th>
             <th>Status</th>
             <th>Created</th>
+            <th>p95 latency (ms)</th>
+            <th>p95 evidence lag (min)</th>
+            <th>CE open</th>
+            <th>verify fail %</th>
             <th></th>
           </tr>
         </thead>
@@ -193,6 +197,10 @@
             <td>${run.run_id || "—"}</td>
             <td>${statusBadge(run.status)}</td>
             <td>${run.created_at || "—"}</td>
+            <td>${run.decision_latency_p95_ms != null ? run.decision_latency_p95_ms.toFixed(1) : "N/A"}</td>
+            <td>${run.evidence_lag_p95_min != null ? run.evidence_lag_p95_min.toFixed(1) : "N/A"}</td>
+            <td>${run.ce_open_count != null ? run.ce_open_count : "N/A"}</td>
+            <td>${run.verify_fail_rate != null ? (run.verify_fail_rate * 100).toFixed(1) + "%" : "N/A"}</td>
             <td><button data-run="${run.run_id}">Open</button></td>
           `;
           tr.querySelector("button").addEventListener("click", () => showRun(run.run_id));
@@ -215,6 +223,7 @@
           fetchJSON(`/api/v1/runs/${encodeURIComponent(runId)}/decisions`),
         ]);
         const proof = run.proof_manifest || {};
+        const m = (run.metrics) ? run.metrics : {};
         runDetail.innerHTML = `
           <div class="muted">Status ${statusBadge(run.status)}</div>
           <div><strong>created_at:</strong> ${run.created_at || "—"}</div>
@@ -222,6 +231,10 @@
           <div><strong>artifacts:</strong> ${Object.keys(run.artifacts || {}).length} files</div>
           <div><strong>verify_report:</strong> ${(run.verify_report && run.verify_report.overall_status) || "—"}</div>
           <div><strong>proof files:</strong> ${(proof.artifacts && Object.keys(proof.artifacts).length) || 0}</div>
+          <div><strong>p95 latency:</strong> ${m.decision_latency_p95_ms != null ? m.decision_latency_p95_ms.toFixed(1) + " ms" : "N/A"}</div>
+          <div><strong>p95 evidence lag:</strong> ${m.evidence_lag_p95_min != null ? m.evidence_lag_p95_min.toFixed(1) + " min" : "N/A"}</div>
+          <div><strong>CE open:</strong> ${m.ce_open_count != null ? m.ce_open_count : "N/A"}</div>
+          <div><strong>verify fail %:</strong> ${m.verify_fail_rate != null ? (m.verify_fail_rate * 100).toFixed(1) + "%" : "N/A"}</div>
         `;
         const decItems = decisions.items || [];
         decisionsCount.textContent = `${decItems.length} rows`;
