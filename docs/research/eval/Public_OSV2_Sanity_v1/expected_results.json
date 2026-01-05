@@ -1,7 +1,7 @@
 {
   "run_id": "OSV2_PUBLIC_SANITY_V1",
   "verify_status": "PASS",
-  "checks_total": 10,
+  "checks_total": 13,
   "checks_failed": 0,
   "ce_open_count": 0,
   "notes": "Sanity scenario with synthetic events; verify should PASS with no open CE entries."
